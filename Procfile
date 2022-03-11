@@ -1,1 +1,1 @@
-worker: python ticy.py
+worker: python -m bot

@@ -1,100 +1,15 @@
-import os
 import requests
-import time
 import re
 import cloudscraper
 import urllib.parse
+import time
 from bs4 import BeautifulSoup
-from pyrogram import Client, filters
-from pyrogram.types import *
 from base64 import standard_b64encode
+from bot import Config
 
 # wetransfer
 WETRANSFER_API_URL = 'https://wetransfer.com/api/v4/transfers'
 WETRANSFER_DOWNLOAD_URL = WETRANSFER_API_URL + '/{transfer_id}/download'
-BIFM_URL = os.environ.get('BIFM_URL', 'https://bifm.tacohitbox.com/api/bypass?url')
-
-# Bot
-Bot = Client(
-    "TiroBot",
-    bot_token=os.environ.get("BOT_TOKEN"),
-    api_id=int(os.environ.get("API_ID")),
-    api_hash=os.environ.get("API_HASH")
-)
-
-START_TEXT = """Hello {},
-I am ROBOT.
-"""
-
-
-@Bot.on_message(filters.private & filters.command(["start", "help"]))
-async def start(bot, update):
-    await update.reply_text(
-        text=START_TEXT.format(update.from_user.mention),
-        disable_web_page_preview=True,
-        quote=True
-    )
-
-@Bot.on_message(filters.command(["artstation"]) & filters.regex(r'artstation\.com/(?:artwork|projects)/([0-9a-zA-Z]+)'))
-async def reply_shortens(bot, update):
-    id = update.matches[0].group(1)
-    ouo = art_k(id)
-    message = await update.reply_text(
-        text=ouo,
-        disable_web_page_preview=False,
-        quote=True
-    )
-
-@Bot.on_message(filters.command(["droplink"]) & filters.regex(r'https?://[^\s]+'))
-async def reply_shortens(bot, update):
-    url = update.matches[0].group(0)
-    ouo = droplink(url)
-    message = await update.reply_text(
-        text=ouo,
-        disable_web_page_preview=True,
-        quote=True
-    )
-
-@Bot.on_message(filters.command(["wetransfer"]) & filters.regex(r'https?://[^\s]+'))
-async def reply_shortens(bot, update):
-    url = update.matches[0].group(0)
-    ouo = wetransfer(url)
-    message = await update.reply_text(
-        text=ouo,
-        disable_web_page_preview=True,
-        quote=True
-    )
-
-@Bot.on_message(filters.command(["gplink"]) & filters.regex(r'https?://[^\s]+'))
-async def reply_shortens(bot, update):
-    url = update.matches[0].group(0)
-    ouo = gplinks(url)
-    message = await update.reply_text(
-        text=ouo,
-        disable_web_page_preview=True,
-        quote=True
-    )
-
-@Bot.on_message(filters.command(["mdisk"]) & filters.regex(r'https?://[^\s]+'))
-async def reply_shortens(bot, update):
-    url = update.matches[0].group(0)
-    ouo = mdisk(url)
-    message = await update.reply_text(
-        text=ouo,
-        disable_web_page_preview=True,
-        quote=True
-    )
-
-@Bot.on_message(filters.command(["bifm"]) & filters.regex(r'https?://[^\s]+'))
-async def reply_shortens(bot, update):
-    x = update.matches[0].group(0)
-    url = encod(x)
-    ouo = bifm(url)
-    message = await update.reply_text(
-        text=ouo,
-        disable_web_page_preview=True,
-        quote=True
-    )
 
 def art_j(id):
     scraper = cloudscraper.create_scraper(interpreter='nodejs', allow_brotli=False)
@@ -245,7 +160,11 @@ def wetransfer(url):
                json=j)
 
     j = r.json()
-    return j.get('direct_link')
+    if "direct_link" in j:
+        return j["direct_link"]
+    else:
+        xo = f'The content is expired/deleted.'
+        return xo
 
 def encod(__str: str) -> str:
     str_bytes = __str.encode('ascii')
@@ -258,12 +177,10 @@ def bifm(url):
     headers = {
         "User-Agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_9_4) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/36.0.1985.125 Safari/537.36"
     }
-    apix = f"{BIFM_URL}={url}"
+    apix = f"{Config.BIFM_URL}={url}"
     response = client.get(apix, headers=headers)
     query = response.json()
     if "destination" in query:
         return query["destination"]
     else:
         return query["err"]
-
-Bot.run()
