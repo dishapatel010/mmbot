@@ -18,4 +18,7 @@
     gplink - GpLink
     mdisk - Mdisk
     wetransfer - Wetl
+    teml - Run Shell/Terminal cmds
+    eval - Evaluate
+
 ---
